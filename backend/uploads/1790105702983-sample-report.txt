@@ -1,0 +1,2 @@
+E2E patient document
+This is a dummy attachment used by the Playwright upload tests.

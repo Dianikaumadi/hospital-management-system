@@ -1,0 +1,2 @@
+-- Reference only. Neon databases are provisioned in the Neon console.
+-- Tables are created by Sequelize on first backend startup after DATABASE_URL is configured.

@@ -1,0 +1,93 @@
+name: E2E tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hms
+          POSTGRES_PASSWORD: hms
+          POSTGRES_DB: hms_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hms -d hms_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Backend (started by Playwright's webServer, see e2e/playwright.config.ts)
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://hms:hms@localhost:5432/hms_e2e
+      DATABASE_SSL: "false"
+      JWT_SECRET: ci-only-secret-not-used-anywhere-else
+      JWT_EXPIRES_IN: 8h
+      CLIENT_URL: http://localhost:5173
+      REQUIRE_ADMIN_REGISTRATION: "false"
+      RATE_LIMIT_MAX: "100000"
+      # E2E suite
+      E2E_BASE_URL: http://localhost:5173
+      E2E_API_URL: http://localhost:4000
+      E2E_START_SERVERS: "true"
+      E2E_DATABASE_URL: postgresql://hms:hms@localhost:5432/hms_e2e
+      E2E_CLEANUP: end
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Type-check the E2E project
+        run: npm run typecheck --workspace e2e
+
+      - name: Run Playwright tests
+        run: npm run test --workspace e2e
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: e2e/reports/html
+          retention-days: 14
+
+      - name: Upload JUnit report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit-report
+          path: e2e/reports/junit
+          retention-days: 14
+
+      - name: Upload traces, screenshots and videos (failures only)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: e2e/test-results
+          retention-days: 7

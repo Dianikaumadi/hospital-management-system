@@ -1,0 +1,10 @@
+export { AppShell } from './components/AppShell';
+export { LoginPage } from './LoginPage';
+export { DashboardPage } from './DashboardPage';
+export { PatientsPage } from './PatientsPage';
+export { DoctorsPage } from './DoctorsPage';
+export { AppointmentsPage } from './AppointmentsPage';
+export { MedicalRecordsPage } from './MedicalRecordsPage';
+export { LaboratoryPage } from './LaboratoryPage';
+export { PharmacyPage } from './PharmacyPage';
+export { BillingPage } from './BillingPage';
