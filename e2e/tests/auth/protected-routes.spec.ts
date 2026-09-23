@@ -70,7 +70,7 @@ test.describe('Protected routes - UI', () => {
 test.describe('Protected routes - API @api', () => {
   const PROTECTED_ENDPOINTS = [
     endpoints.patients, endpoints.doctors, endpoints.appointments, endpoints.medicalRecords, endpoints.labTests,
-    endpoints.medicines, endpoints.invoices, endpoints.staff, endpoints.dashboard, endpoints.me
+    endpoints.medicines, endpoints.invoices, endpoints.staff, endpoints.dashboard, endpoints.me, endpoints.users
   ];
 
   for (const endpoint of PROTECTED_ENDPOINTS) {

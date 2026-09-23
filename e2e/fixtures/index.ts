@@ -1,7 +1,8 @@
 import { test as base, expect, BrowserContext, Page } from '@playwright/test';
 import { ApiClient } from '../api/ApiClient';
 import {
-  AppointmentsPage, BillingPage, DashboardPage, DoctorsPage, LaboratoryPage, LoginPage, MedicalRecordsPage, PatientsPage, PharmacyPage
+  ActivateAccountPage, AppointmentsPage, BillingPage, DashboardPage, DoctorsPage, LaboratoryPage, LoginPage,
+  MedicalRecordsPage, PatientsPage, PharmacyPage, RegisterPage, UserManagementPage
 } from '../pages';
 import { loadSession, Session } from '../utils/session';
 import { TestData } from './test-data';
@@ -23,6 +24,9 @@ interface TestFixtures {
   pageAs: (role: RoleKey) => Promise<Page>;
   diagnostics: void;
   loginPage: LoginPage;
+  registerPage: RegisterPage;
+  activateAccountPage: ActivateAccountPage;
+  userManagementPage: UserManagementPage;
   dashboardPage: DashboardPage;
   patientsPage: PatientsPage;
   doctorsPage: DoctorsPage;
@@ -80,6 +84,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   }, { auto: true }],
 
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
+  registerPage: async ({ page }, use) => use(new RegisterPage(page)),
+  activateAccountPage: async ({ page }, use) => use(new ActivateAccountPage(page)),
+  userManagementPage: async ({ page }, use) => use(new UserManagementPage(page)),
   dashboardPage: async ({ page }, use) => use(new DashboardPage(page)),
   patientsPage: async ({ page }, use) => use(new PatientsPage(page)),
   doctorsPage: async ({ page }, use) => use(new DoctorsPage(page)),

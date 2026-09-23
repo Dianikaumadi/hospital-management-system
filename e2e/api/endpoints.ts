@@ -11,7 +11,12 @@ export const endpoints = {
   medicines: 'pharmacy/medicines',
   invoices: 'billing/invoices',
   staff: 'staff',
-  dashboard: 'reports/dashboard'
+  dashboard: 'reports/dashboard',
+  users: 'users',
+  invitations: 'users/invitations'
 } as const;
 
 export const patientDocuments = (patientId: number): string => `patients/${patientId}/documents`;
+export const userStatus = (userId: number): string => `users/${userId}/status`;
+export const inspectInvitation = (token: string): string => `auth/invitations/${token}`;
+export const activateInvitation = (token: string): string => `auth/invitations/${token}/activate`;

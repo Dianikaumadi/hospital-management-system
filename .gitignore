@@ -2,9 +2,10 @@ node_modules/
 dist/
 .env
 .env.local
+.env.e2e
 coverage/
-uploads/*
-!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Playwright E2E
 e2e/.auth/

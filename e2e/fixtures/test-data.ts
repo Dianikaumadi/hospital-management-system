@@ -2,7 +2,7 @@ import { TestInfo } from '@playwright/test';
 import { ApiClient } from '../api/ApiClient';
 import { endpoints } from '../api/endpoints';
 import type {
-  Appointment, AuthResult, Doctor, Invoice, LabTest, MedicalRecord, Medicine, Patient, Role, Staff
+  Appointment, AuthResult, Doctor, InvitationCreateResult, Invoice, LabTest, MedicalRecord, Medicine, Patient, Role, Staff
 } from '../api/types';
 import { deleteTracked, cleanupConfigured, Tracked, TrackedTable } from '../utils/db';
 import { env } from '../config/env';
@@ -11,6 +11,7 @@ import type { Session } from '../utils/session';
 import type { RoleKey } from './users';
 import { buildAppointment, AppointmentInput } from './appointments';
 import { buildDoctor, DoctorInput } from './doctors';
+import { buildInvitation, InvitationInput } from './invitations';
 import { buildInvoice, InvoiceInput } from './invoices';
 import { buildLabTest, LabTestInput } from './lab-tests';
 import { buildMedicalRecord, MedicalRecordInput } from './medical-records';
@@ -109,6 +110,14 @@ export class TestData {
     const staff = await this.apiFor('admin').postData<Staff>(endpoints.staff, buildStaff(user.id, overrides));
     this.track('staff', staff.id);
     return staff;
+  }
+
+  /** Creates a staff invitation as Admin (POST /users/invitations). */
+  async invitation(overrides: Partial<InvitationInput> = {}): Promise<InvitationCreateResult & InvitationInput> {
+    const input = buildInvitation(overrides);
+    const result = await this.apiFor('admin').postData<InvitationCreateResult>(endpoints.invitations, input);
+    this.track('invitations', result.invitationId);
+    return { ...result, ...input };
   }
 
   /**

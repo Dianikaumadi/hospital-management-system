@@ -62,7 +62,7 @@ medicines, invoices, staff, and reports. Send `Authorization: Bearer <token>`.
 
 ## End-to-end tests
 
-A Playwright + TypeScript suite (Page Object Model, 229 tests across auth, RBAC, patients, doctors,
+A Playwright + TypeScript suite (Page Object Model, 268 tests across auth, RBAC, user management, patients, doctors,
 appointments, medical records, laboratory, pharmacy, billing and dashboard) lives in [`e2e/`](e2e/README.md).
 
 ```bash

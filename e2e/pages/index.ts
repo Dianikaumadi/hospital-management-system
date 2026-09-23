@@ -1,5 +1,8 @@
 export { AppShell } from './components/AppShell';
 export { LoginPage } from './LoginPage';
+export { RegisterPage } from './RegisterPage';
+export { ActivateAccountPage } from './ActivateAccountPage';
+export { UserManagementPage } from './UserManagementPage';
 export { DashboardPage } from './DashboardPage';
 export { PatientsPage } from './PatientsPage';
 export { DoctorsPage } from './DoctorsPage';

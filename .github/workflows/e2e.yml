@@ -39,12 +39,14 @@ jobs:
       JWT_SECRET: ci-only-secret-not-used-anywhere-else
       JWT_EXPIRES_IN: 8h
       CLIENT_URL: http://localhost:5173
-      REQUIRE_ADMIN_REGISTRATION: "false"
       RATE_LIMIT_MAX: "100000"
+      # No SMTP_* set - invitation emails are never actually sent in CI (emailSent: false), which
+      # tests/users/user-management.spec.ts asserts on deterministically.
       # E2E suite
       E2E_BASE_URL: http://localhost:5173
       E2E_API_URL: http://localhost:4000
       E2E_START_SERVERS: "true"
+      # Also used by global-setup to seed the first Admin directly (POST /auth/register is admin-only).
       E2E_DATABASE_URL: postgresql://hms:hms@localhost:5432/hms_e2e
       E2E_CLEANUP: end
 

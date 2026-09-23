@@ -1,6 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test';
 
-export type NavItem = 'dashboard' | 'patients' | 'appointments' | 'doctors' | 'medical-records' | 'laboratory' | 'pharmacy' | 'billing';
+export type NavItem =
+  | 'dashboard' | 'patients' | 'appointments' | 'doctors' | 'medical-records' | 'laboratory' | 'pharmacy' | 'billing'
+  | 'user-management';
 
 /** The authenticated layout: sidebar navigation, user badge and sign-out. */
 export class AppShell {

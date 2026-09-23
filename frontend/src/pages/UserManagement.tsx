@@ -99,7 +99,7 @@ export function UserManagement() {
 
   return <div data-testid="user-management-page">
     <div className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-      <div><p className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck size={16}/> Admin</p><h2 className="mt-1 text-3xl font-bold">User Management</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">Staff access and onboarding</p></div>
+      <div><p className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck size={16}/> Admin</p><h2 data-testid="user-management-title" className="mt-1 text-3xl font-bold">User Management</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">Staff access and onboarding</p></div>
       <button type="button" onClick={loadUsers} className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary"><RefreshCw size={16}/> Refresh</button>
     </div>
 
@@ -138,17 +138,17 @@ export function UserManagement() {
       <aside className="space-y-6">
         <form onSubmit={createInvite} data-testid="invite-staff-form" className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
           <h3 className="flex items-center gap-2 text-lg font-bold"><UserPlus size={18}/> Invite Staff</h3>
-          <label className="mt-5 block text-sm font-medium">First name<input required minLength={2} value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
-          <label className="mt-4 block text-sm font-medium">Last name<input required minLength={2} value={form.lastName} onChange={(event) => setForm({ ...form, lastName: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
-          <label className="mt-4 block text-sm font-medium">Email<input required type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
-          <label className="mt-4 block text-sm font-medium">Role<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as Role })} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-primary">{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
-          <button type="submit" disabled={saving} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"><Mail size={16}/>{saving ? 'Creating invitation...' : 'Create invitation'}</button>
+          <label className="mt-5 block text-sm font-medium">First name<input required minLength={2} data-testid="invite-first-name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
+          <label className="mt-4 block text-sm font-medium">Last name<input required minLength={2} data-testid="invite-last-name" value={form.lastName} onChange={(event) => setForm({ ...form, lastName: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
+          <label className="mt-4 block text-sm font-medium">Email<input required type="email" data-testid="invite-email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"/></label>
+          <label className="mt-4 block text-sm font-medium">Role<select data-testid="invite-role" value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as Role })} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-primary">{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
+          <button type="submit" data-testid="invite-submit" disabled={saving} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"><Mail size={16}/>{saving ? 'Creating invitation...' : 'Create invitation'}</button>
         </form>
 
         {inviteResult && <section data-testid="invitation-delivery" className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
           <div className="flex items-center justify-between gap-3"><h3 className="text-lg font-bold">Invitation Delivery</h3><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${inviteResult.emailSent ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{inviteResult.emailSent ? 'Email sent' : 'Manual delivery'}</span></div>
           <p className="mt-2 text-sm text-slate-500">{inviteResult.email}</p>
-          <input readOnly value={activationLink} className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"/>
+          <input readOnly data-testid="invitation-link" value={activationLink} className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"/>
           <p className="mt-3 text-xs text-slate-500">Expires {formatDate(inviteResult.expiresAt)}</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <button type="button" onClick={copyLink} className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary"><Copy size={16}/> Copy link</button>

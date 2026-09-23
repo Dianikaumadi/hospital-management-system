@@ -6,7 +6,8 @@ import {
 import { buildPatient } from '../../fixtures/patients';
 import type { Page } from '@playwright/test';
 import {
-  AppointmentsPage, BillingPage, DashboardPage, DoctorsPage, LaboratoryPage, MedicalRecordsPage, PatientsPage, PharmacyPage
+  AppointmentsPage, BillingPage, DashboardPage, DoctorsPage, LaboratoryPage, MedicalRecordsPage, PatientsPage, PharmacyPage,
+  UserManagementPage
 } from '../../pages';
 import type { ModuleListPage } from '../../pages/ModuleListPage';
 
@@ -127,6 +128,41 @@ test.describe('RBAC - requirement checks', () => {
     expect((await api.accountant.patch(`${endpoints.invoices}/${invoice.id}`, { status: 'Paid' })).status()).toBe(200);
     expect((await api.accountant.get(endpoints.dashboard)).status()).toBe(200);
     expect((await api.accountant.patch(`${endpoints.medicines}/${MISSING_ID}`, {})).status()).toBe(403);
+  });
+});
+
+test.describe('RBAC - user management is Admin-only', () => {
+  // GET /users is unlike the CRUD modules above (where reads are open to any authenticated role),
+  // so it is not part of MODULES/WRITE_ACCESS - it gets its own small matrix here.
+  for (const roleKey of ROLE_KEYS) {
+    const user = users[roleKey];
+    const isAdmin = roleKey === 'admin';
+
+    test(`${user.role} ${isAdmin ? 'can' : 'cannot'} list users`, async ({ api }) => {
+      const response = await api[roleKey].get(endpoints.users);
+      expect(response.status()).toBe(isAdmin ? 200 : 403);
+    });
+  }
+
+  test('non-admins do not see "User management" in the sidebar, and visiting /users redirects them to the dashboard', async ({ pageAs }) => {
+    for (const roleKey of ROLE_KEYS.filter((k) => k !== 'admin')) {
+      const page = await pageAs(roleKey);
+      await new DashboardPage(page).open();
+      await expect(page.getByTestId('nav-user-management'), users[roleKey].role).toHaveCount(0);
+
+      await page.goto('/users');
+      await expect(page).toHaveURL('/');
+    }
+  });
+
+  test('@smoke Admin sees "User management" in the sidebar and can open it', async ({ pageAs }) => {
+    const page = await pageAs('admin');
+    await new DashboardPage(page).open();
+
+    const response = await new UserManagementPage(page).openFromSidebar();
+
+    expect(response.status()).toBe(200);
+    await expect(page).toHaveURL('/users');
   });
 });
 

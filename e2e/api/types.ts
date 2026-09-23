@@ -5,6 +5,18 @@ export interface Envelope<T> { success: boolean; data: T; meta?: { total: number
 export interface AuthUser { id: number; firstName: string; lastName: string; email: string; role: Role }
 export interface AuthResult { user: AuthUser; token: string }
 
+/** Row returned by GET /users (passwordHash excluded). */
+export interface UserRecord {
+  id: number; firstName: string; lastName: string; email: string; role: Role; isActive: boolean; createdAt: string; updatedAt: string;
+}
+/** Response of POST /users/invitations. */
+export interface InvitationCreateResult {
+  invitationId: number; email: string; expiresAt: string; token: string; emailSent: boolean;
+  emailDeliveryReason?: 'not_configured' | 'send_failed';
+}
+/** Response of GET /auth/invitations/:token (public - no auth required). */
+export interface InvitationPreview { email: string; firstName: string; lastName: string; role: Role; expiresAt: string }
+
 export interface PatientDocument { name: string; url: string; uploadedAt: string }
 export interface Patient {
   id: number; medicalRecordNumber: string; firstName: string; lastName: string; dateOfBirth: string;
