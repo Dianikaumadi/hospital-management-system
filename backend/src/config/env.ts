@@ -6,7 +6,15 @@ const required = (name: string, fallback?: string): string => {
   return value;
 };
 
-const databaseUrl = required('DATABASE_URL').replace(/([?&])sslmode=require\b/gi, '$1sslmode=verify-full');
+// CORS compares origins exactly, so tolerate a missing scheme or trailing slash in CLIENT_URL.
+// Several origins may be given comma-separated; the first is used for links in emails.
+const clientUrls = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean)
+  .map((url) => (/^https?:\/\//i.test(url) ? url : `https://${url}`));
+
+const databaseUrl =required('DATABASE_URL').replace(/([?&])sslmode=require\b/gi, '$1sslmode=verify-full');
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -14,7 +22,8 @@ export const env = {
   databaseUrl,
   jwtSecret: required('JWT_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: clientUrls[0],
+  clientUrls,
   smtpHost: process.env.SMTP_HOST,
   smtpPort: Number(process.env.SMTP_PORT || (process.env.SMTP_SECURE === 'true' ? 465 : 587)),
   smtpSecure: process.env.SMTP_SECURE === 'true',
