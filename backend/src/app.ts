@@ -7,6 +7,8 @@ import { env } from './config/env';
 import { errorHandler, notFound } from './middleware/error';
 
 export const app = express();
+// Render/Vercel sit behind one reverse proxy; trust it so rate limiting keys on the real client IP.
+app.set('trust proxy', 1);
 app.use(cors({ origin: env.clientUrl }));
 app.use(express.json({ limit: '2mb' }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: env.rateLimitMax }));

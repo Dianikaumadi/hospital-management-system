@@ -6,6 +6,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "create-admin": "tsx src/scripts/create-admin.ts",
     "test": "vitest run"
   },
   "dependencies": {
