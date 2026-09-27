@@ -81,7 +81,7 @@ test.describe('Appointments - booking (UI)', () => {
 
     await appointmentsPage.refresh();
 
-    await expect(appointmentsPage.table.locator('thead th')).toHaveText(['ID', 'patientId', 'doctorId', 'startsAt', 'status']);
+    await expect(appointmentsPage.table.locator('thead th')).toHaveText(['ID', 'patientId', 'patient', 'doctorId', 'doctor', 'startsAt', 'status']);
     await appointmentsPage.expectRow(appointment.id, {
       id: `#${appointment.id}`, patientId: appointment.patientId, doctorId: appointment.doctorId,
       startsAt: appointment.startsAt, status: 'Scheduled'

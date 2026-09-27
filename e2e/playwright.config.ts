@@ -41,6 +41,9 @@ export default defineConfig({
         {
           command: 'npx tsx src/server.ts',
           cwd: '../backend',
+          // backend/.env may hold live SMTP settings; a blank SMTP_HOST (dotenv never overrides it) keeps
+          // test invitations from sending real emails, which is what the invitation tests expect.
+          env: { SMTP_HOST: '' },
           url: `${env.apiUrl}/health`,
           reuseExistingServer: !env.isCI,
           timeout: 120_000

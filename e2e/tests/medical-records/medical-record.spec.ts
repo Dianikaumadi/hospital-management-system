@@ -155,7 +155,7 @@ test.describe('Medical records screen (doctor, UI)', () => {
 
     expect(response.status()).toBe(200);
     await expect(page).toHaveURL('/medical-records');
-    await expect(medicalRecordsPage.table.locator('thead th')).toHaveText(['ID', 'patientId', 'doctorId', 'diagnosis', 'treatment']);
+    await expect(medicalRecordsPage.table.locator('thead th')).toHaveText(['ID', 'patientId', 'patient', 'doctorId', 'doctor', 'diagnosis', 'treatment']);
     await medicalRecordsPage.expectRow(older.id, { patientId: patient.id, diagnosis: 'E2E Visit 1 - Influenza' });
     await medicalRecordsPage.expectRow(newer.id, { patientId: patient.id, diagnosis: 'E2E Visit 2 - Recovery', treatment: 'Follow-up in two weeks' });
     const ids = await medicalRecordsPage.rows.evaluateAll((els) => els.map((el) => Number(el.getAttribute('data-row-id'))));

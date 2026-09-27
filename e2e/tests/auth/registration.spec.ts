@@ -52,10 +52,10 @@ test.describe('Self-registration is intentionally blocked (UI)', () => {
     }
   });
 
-  test('the login page links to the (non-functional) register form', async ({ page, loginPage }) => {
+  test('the login page does not link to the register form and points to admin invitations instead', async ({ page, loginPage }) => {
     await loginPage.open();
-    await page.getByRole('link', { name: 'Create one' }).click();
-    await expect(page).toHaveURL(/\/register$/);
+    await expect(page.getByRole('link', { name: 'Create one' })).toHaveCount(0);
+    await expect(page.getByText('Ask your administrator for an invitation.')).toBeVisible();
   });
 });
 
