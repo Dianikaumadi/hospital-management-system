@@ -260,6 +260,9 @@ against your own `backend/.env`, blank the SMTP variables for that process so `i
 # PowerShell, one-off for a manual backend run:
 $env:SMTP_HOST = ""; npm run dev --workspace backend
 ```
+With `E2E_START_SERVERS=true`, the backend that Playwright starts already gets a blank `SMTP_HOST`
+(see `webServer.env` in `playwright.config.ts`), so no manual step is needed. A backend you start
+yourself still needs the step above; Playwright reuses it as-is.
 The GitHub Actions workflow is already safe: it defines the backend's environment entirely in `e2e.yml` and
 never loads `backend/.env`, so `SMTP_HOST` is simply unset in CI.
 

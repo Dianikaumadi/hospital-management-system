@@ -96,7 +96,7 @@ hospital-management-system/
 │   │   ├── app.ts           Express application
 │   │   └── server.ts        Entry point
 │   ├── tests/               Vitest API tests
-│   └── uploads/             Uploaded patient documents (local)
+│   └── uploads/             Legacy on-disk uploads (documents are now stored in the database)
 ├── frontend/                React + Vite single-page app
 │   └── src/
 │       ├── components/      Reusable UI components
