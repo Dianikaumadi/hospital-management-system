@@ -49,12 +49,13 @@ every department.
   - Pharmacy / medicine inventory
   - Billing / invoices
   - Staff
-- **Dashboard** — summary statistics and reports for Admin, Accountant and Doctor roles.
+- **Role-based dashboards** — hospital-wide statistics for Admin; every other role gets its own
+  dashboard (e.g. a doctor's appointments today, a pharmacist's reorder list, an accountant's unpaid invoices).
 - **Currency** — all money (consultation fees, medicine prices, invoice totals, revenue) is in
   Sri Lankan Rupees and displayed as `LKR 1,234.50`.
 - **Search and pagination** on list endpoints.
 - **Hardening** — request validation, rate limiting, strict CORS allow-list, central error handling.
-- **End-to-end test suite** — 269 Playwright tests covering every module and the RBAC matrix, run in CI.
+- **End-to-end test suite** — 283 Playwright tests covering every module and the RBAC matrix, run in CI.
 
 ## Tech stack
 
@@ -257,21 +258,38 @@ Workspace-specific:
 
 ## Roles and permissions
 
-All authenticated users can **read** every module. **Create / update** is restricted as follows:
+Access follows the least-privilege principle: each role only **reads** the modules its job needs,
+and only sees those modules in the sidebar. ✏️ = read and create/update, 👁️ = read only, blank = no access
+(the API returns `403` and the screen redirects to the dashboard).
 
 | Module            | Admin | Doctor | Nurse | Receptionist | Lab Staff | Pharmacist | Accountant |
 | ----------------- | :---: | :----: | :---: | :----------: | :-------: | :--------: | :--------: |
-| Patients          | ✅    | ✅     | ✅    | ✅           |           |            |            |
-| Patient documents | ✅    | ✅     | ✅    | ✅           |           |            |            |
-| Doctors           | ✅    |        |       | ✅           |           |            |            |
-| Appointments      | ✅    | ✅     | ✅    | ✅           |           |            |            |
-| Medical records   | ✅    | ✅     | ✅    |              |           |            |            |
-| Laboratory tests  | ✅    | ✅     | ✅    |              | ✅        |            |            |
-| Pharmacy          | ✅    |        |       |              |           | ✅         |            |
-| Billing           | ✅    |        |       | ✅           |           |            | ✅         |
-| Staff             | ✅    |        |       |              |           |            |            |
-| Dashboard reports | ✅    | ✅     |       |              |           |            | ✅         |
-| User management   | ✅    |        |       |              |           |            |            |
+| Patients          | ✏️    | ✏️     | ✏️    | ✏️           | 👁️        |            | 👁️         |
+| Patient documents | ✏️    | ✏️     | ✏️    | ✏️           |           |            |            |
+| Doctors           | ✏️    | 👁️     | 👁️    | ✏️           |           |            |            |
+| Appointments      | ✏️    | ✏️     | ✏️    | ✏️           |           |            |            |
+| Medical records   | ✏️    | ✏️     | ✏️    |              |           |            |            |
+| Laboratory tests  | ✏️    | ✏️     | ✏️    |              | ✏️        |            |            |
+| Pharmacy          | ✏️    |        |       |              |           | ✏️         |            |
+| Billing           | ✏️    |        |       | ✏️           |           |            | ✏️         |
+| Staff             | ✏️    |        |       |              |           |            |            |
+| User management   | ✏️    |        |       |              |           |            |            |
+
+The rules live in [backend/src/config/permissions.ts](backend/src/config/permissions.ts) and are mirrored by
+[frontend/src/utils/permissions.ts](frontend/src/utils/permissions.ts) for the menu and "Add new" buttons.
+
+### Role dashboards
+
+Admins see the hospital-wide dashboard. Every other role gets its own dashboard (`GET /reports/overview`):
+
+| Role         | Cards                                                                 | Work list |
+| ------------ | --------------------------------------------------------------------- | --------- |
+| Doctor       | My appointments today, my upcoming appointments, my medical records, lab results pending | My appointments today |
+| Nurse        | Today's appointments, total patients, samples to collect, lab tests in progress | Today's appointments |
+| Receptionist | Today's appointments, patients registered today, total patients, unpaid invoices | Today's appointments |
+| Lab Staff    | Requested, collected, processing, completed tests                     | Test queue (oldest first) |
+| Pharmacist   | Medicines, low stock, out of stock, stock value (LKR)                 | Reorder list |
+| Accountant   | Revenue (LKR), pending, partially paid, paid invoices                 | Unpaid invoices |
 
 ## API reference
 
@@ -323,7 +341,8 @@ Each resource exposes the same four operations:
 | Method | Endpoint                   | Access                   | Description |
 | ------ | -------------------------- | ------------------------ | ----------- |
 | `POST` | `/patients/:id/documents`  | Admin, Doctor, Nurse, Receptionist | Upload a patient document (`multipart/form-data`) |
-| `GET`  | `/reports/dashboard`       | Admin, Accountant, Doctor | Dashboard statistics |
+| `GET`  | `/reports/dashboard`       | Admin, Accountant, Doctor | Hospital-wide dashboard statistics |
+| `GET`  | `/reports/overview`        | Auth                     | Dashboard cards and work list for the caller's role. Optional `from` / `to` (ISO 8601) set the "today" window |
 | `GET`  | `/health` (no `/api` prefix) | Public                 | Health check |
 
 ## Testing
@@ -336,7 +355,7 @@ npm test
 
 ### End-to-end tests
 
-A Playwright + TypeScript suite using the Page Object Model, with **268 tests** across auth, RBAC,
+A Playwright + TypeScript suite using the Page Object Model, with **283 tests** across auth, RBAC,
 user management, patients, doctors, appointments, medical records, laboratory, pharmacy, billing
 and the dashboard.
 
