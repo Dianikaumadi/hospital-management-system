@@ -1,7 +1,7 @@
 import { test, expect, ROLE_KEYS, users } from '../../fixtures';
 import { endpoints } from '../../api/endpoints';
 import {
-  DASHBOARD_ACCESS, MODULE_KEYS, MODULES, REQUIRED_MODULES, WRITE_ACCESS
+  DASHBOARD_ACCESS, MODULE_KEYS, MODULES, READ_ACCESS, REQUIRED_MODULES, WRITE_ACCESS
 } from '../../fixtures/permissions';
 import { buildPatient } from '../../fixtures/patients';
 import type { Page } from '@playwright/test';
@@ -52,12 +52,15 @@ test.describe('RBAC - API access matrix @api', () => {
 
     for (const moduleKey of MODULE_KEYS) {
       const module = MODULES[moduleKey];
+      const canRead = READ_ACCESS[moduleKey].includes(roleKey);
       const canWrite = WRITE_ACCESS[moduleKey].includes(roleKey);
 
-      test(`${user.role} ${canWrite ? 'can' : 'cannot'} write to ${module.label}`, async ({ api }) => {
-        // Read: open to every authenticated role.
+      test(`${user.role} ${canRead ? 'can' : 'cannot'} read and ${canWrite ? 'can' : 'cannot'} write ${module.label}`, async ({ api }) => {
+        // Read: list and single-record lookups follow the same rule (404 on a missing id means "authorised").
         const read = await api[roleKey].get(module.endpoint, { limit: 1 });
-        expect(read.status(), `${user.role} GET ${module.endpoint}`).toBe(200);
+        expect(read.status(), `${user.role} GET ${module.endpoint}`).toBe(canRead ? 200 : 403);
+        const readOne = await api[roleKey].get(`${module.endpoint}/${MISSING_ID}`);
+        expect(readOne.status(), `${user.role} GET ${module.endpoint}/:id`).toBe(canRead ? 404 : 403);
 
         // Write: PATCH on a non-existent row -> 404 means "authorised", 403 means "denied".
         const write = await api[roleKey].patch(`${module.endpoint}/${MISSING_ID}`, {});
@@ -166,32 +169,42 @@ test.describe('RBAC - user management is Admin-only', () => {
   });
 });
 
-test.describe('RBAC - denied actions surface in the UI', () => {
-  test('a Pharmacist adding a patient sees a permission error and no record is created', async ({ pageAs }) => {
-    const page = await pageAs('pharmacist');
-    const patients = new PatientsPage(page);
-    await patients.open();
+test.describe('RBAC - each role only sees what it can use (UI)', () => {
+  for (const roleKey of ROLE_KEYS) {
+    const user = users[roleKey];
 
-    const input = buildPatient();
-    const result = await patients.create({
-      medicalRecordNumber: input.medicalRecordNumber, firstName: input.firstName, lastName: input.lastName,
-      dateOfBirth: input.dateOfBirth, gender: input.gender, phone: input.phone
+    test(`${user.role} sees exactly the modules it can read in the sidebar`, async ({ pageAs }) => {
+      const page = await pageAs(roleKey);
+      await new DashboardPage(page).open();
+      await expect(page.getByTestId('nav-dashboard')).toBeVisible();
+
+      for (const key of MODULE_KEYS.filter((m) => MODULES[m].nav)) {
+        const expected = READ_ACCESS[key].includes(roleKey) ? 1 : 0;
+        await expect(page.getByTestId(`nav-${MODULES[key].nav}`), `${user.role} -> ${MODULES[key].label}`).toHaveCount(expected);
+      }
     });
+  }
 
-    expect(result.status).toBe(403);
-    await expect(patients.formError).toHaveText('You do not have permission to perform this action');
-    await expect(patients.form).toBeVisible(); // modal stays open so the user does not lose their input
-    await expect(patients.notice).toHaveCount(0);
+  test('opening a hidden screen by URL redirects to the dashboard', async ({ pageAs }) => {
+    const cases = [['pharmacist', '/patients'], ['receptionist', '/pharmacy'], ['laboratory', '/billing'], ['accountant', '/medical-records']] as const;
+    for (const [roleKey, path] of cases) {
+      const page = await pageAs(roleKey);
+      await page.goto(path);
+      await expect(page, `${users[roleKey].role} -> ${path}`).toHaveURL('/');
+      await expect(page.getByTestId('dashboard-title')).toBeVisible();
+    }
   });
 
-  test('a Receptionist adding a medicine is denied', async ({ pageAs }) => {
-    const page = await pageAs('receptionist');
-    const pharmacy = new PharmacyPage(page);
-    await pharmacy.open();
+  test('view-only screens list records but offer no "Add new" button', async ({ pageAs }) => {
+    const cases = [['doctor', 'doctors'], ['laboratory', 'patients'], ['accountant', 'patients']] as const;
+    for (const [roleKey, key] of cases) {
+      expect(WRITE_ACCESS[key]).not.toContain(roleKey); // guard: the case really is view-only
+      const page = await pageAs(roleKey);
+      const screen = screens[key](page);
 
-    const result = await pharmacy.create({ name: 'E2E Denied Medicine', sku: 'e2e-sku-denied', quantity: 1, unitPrice: 1 });
-
-    expect(result.status).toBe(403);
-    await expect(pharmacy.formError).toContainText('permission');
+      expect((await screen.open()).status(), `${users[roleKey].role} listing ${key}`).toBe(200);
+      await expect(screen.addButton).toHaveCount(0);
+      await expect(page.getByTestId('view-only-badge')).toHaveText('View only');
+    }
   });
 });

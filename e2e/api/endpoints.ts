@@ -12,6 +12,7 @@ export const endpoints = {
   invoices: 'billing/invoices',
   staff: 'staff',
   dashboard: 'reports/dashboard',
+  overview: 'reports/overview',
   users: 'users',
   invitations: 'users/invitations'
 } as const;

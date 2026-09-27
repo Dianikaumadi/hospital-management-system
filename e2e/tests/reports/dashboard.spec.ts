@@ -1,4 +1,6 @@
-import { test, expect, storageStatePath } from '../../fixtures';
+import { test, expect, storageStatePath, users } from '../../fixtures';
+import type { RoleKey } from '../../fixtures';
+import { DashboardPage } from '../../pages';
 import { endpoints } from '../../api/endpoints';
 import type { DashboardStats } from '../../api/types';
 import { DEFAULT_LINES } from '../../fixtures/invoices';
@@ -136,16 +138,78 @@ test.describe('Dashboard reports @counts', () => {
     }
   });
 
-  test('loads the dashboard for an accountant (revenue access) and a doctor', async ({ pageAs }) => {
-    for (const role of ['accountant', 'doctor'] as const) {
-      const page = await pageAs(role);
-      const [response] = await Promise.all([
-        page.waitForResponse((r) => r.url().endsWith('/api/reports/dashboard')),
-        page.goto('/')
-      ]);
-      expect(response.status(), role).toBe(200);
-      const revenue = await page.getByTestId('stat-revenue-value').innerText();
-      expect(parseCurrency(revenue), role).toBeGreaterThanOrEqual(0);
+});
+
+/** Cards on each role's own dashboard (GET /reports/overview), in display order. */
+const ROLE_CARDS: Record<Exclude<RoleKey, 'admin'>, string[]> = {
+  doctor: ['my-appointments-today', 'my-upcoming', 'my-medical-records', 'labs-pending'],
+  receptionist: ['appointments-today', 'patients-today', 'patients', 'invoices-unpaid'],
+  laboratory: ['labs-requested', 'labs-collected', 'labs-processing', 'labs-completed'],
+  pharmacist: ['medicines', 'low-stock', 'out-of-stock', 'stock-value'],
+  accountant: ['revenue', 'invoices-pending', 'invoices-partial', 'invoices-paid']
+};
+type Overview = { role: string; cards: { key: string; value: number; money?: boolean }[]; list: { title: string; items: { id: number; title: string }[] } };
+
+test.describe('Role dashboards', () => {
+  test.afterEach(async ({ data }, testInfo) => {
+    await data.finish(testInfo);
+  });
+
+  for (const [roleKey, cards] of Object.entries(ROLE_CARDS) as [Exclude<RoleKey, 'admin'>, string[]][]) {
+    const role = users[roleKey].role;
+
+    test(`${role} sees only its own dashboard sections`, async ({ pageAs, api }) => {
+      const page = await pageAs(roleKey);
+      const dashboard = new DashboardPage(page);
+      const response = await dashboard.open();
+
+      expect(new URL(response.url()).pathname).toBe('/api/reports/overview');
+      expect(response.status()).toBe(200);
+      await expect(dashboard.title).toHaveText(`${role} dashboard`);
+      for (const key of cards) await expect(dashboard.card(key), key).toBeVisible();
+      // Hospital-wide admin figures are not on role dashboards.
+      await expect(page.getByTestId('summary-staff')).toHaveCount(0);
+      if (!cards.includes('revenue')) await expect(dashboard.card('revenue')).toHaveCount(0);
+
+      const overview = await api[roleKey].getData<Overview>(endpoints.overview);
+      expect(overview.role).toBe(role);
+      expect(overview.cards.map((c) => c.key)).toEqual(cards);
+    });
+  }
+
+  test("a doctor's appointment today appears on their dashboard", async ({ api, data }) => {
+    const slot = new Date(Date.now() + 60 * 60 * 1000);
+    slot.setUTCMinutes(0, 0, 0);
+    const appointment = await data.appointment({ startsAt: slot.toISOString() });
+    const window = { from: new Date(Date.now() - 60 * 60 * 1000).toISOString(), to: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString() };
+
+    const overview = await api.doctor.getData<Overview>(endpoints.overview, window);
+
+    expect(overview.cards.find((c) => c.key === 'my-appointments-today')!.value).toBeGreaterThanOrEqual(1);
+    expect(overview.list.items.map((i) => i.id)).toContain(appointment.id);
+  });
+
+  test('an out-of-stock medicine is counted on the pharmacist dashboard', async ({ api, data }) => {
+    await data.medicine({ quantity: 0, reorderLevel: 10 });
+
+    const overview = await api.pharmacist.getData<Overview>(endpoints.overview);
+    const value = (key: string) => overview.cards.find((c) => c.key === key)!.value;
+
+    expect(value('out-of-stock')).toBeGreaterThanOrEqual(1);
+    expect(value('low-stock')).toBeGreaterThanOrEqual(value('out-of-stock') > 0 ? 1 : 0);
+  });
+
+  test('money on role dashboards is shown in Sri Lankan Rupees', async ({ pageAs }) => {
+    for (const [roleKey, key] of [['accountant', 'revenue'], ['pharmacist', 'stock-value']] as const) {
+      const page = await pageAs(roleKey);
+      await new DashboardPage(page).open();
+      const text = await page.getByTestId(`stat-${key}-value`).innerText();
+      expect(text, roleKey).toMatch(/^LKR [\d,]+\.\d{2}$/);
+      expect(parseCurrency(text), roleKey).toBeGreaterThanOrEqual(0);
     }
+  });
+
+  test('the overview API rejects an invalid date window', async ({ api }) => {
+    expect((await api.doctor.get(endpoints.overview, { from: 'not-a-date' })).status()).toBe(422);
   });
 });

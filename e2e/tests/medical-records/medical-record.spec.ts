@@ -1,5 +1,4 @@
 import { test, expect, storageStatePath } from '../../fixtures';
-import { MedicalRecordsPage } from '../../pages';
 import { errorBody } from '../../api/ApiClient';
 import { endpoints } from '../../api/endpoints';
 import type { MedicalRecord } from '../../api/types';
@@ -192,15 +191,17 @@ test.describe('Medical records screen (doctor, UI)', () => {
     expect(posts).toHaveLength(0);
   });
 
-  test('a receptionist can view the screen but is denied when adding a record', async ({ pageAs, data }) => {
+  test('a receptionist cannot open the screen or read or add records', async ({ pageAs, api, data }) => {
     const patient = await data.patient();
     const page = await pageAs('receptionist');
-    const screen = new MedicalRecordsPage(page);
-    await screen.open();
 
-    const result = await screen.create({ patientId: patient.id, diagnosis: 'E2E Not allowed', treatment: 'n/a' });
+    await page.goto('/medical-records');
+    await expect(page).toHaveURL('/'); // clinical notes are hidden from the front desk
+    await expect(page.getByTestId('nav-medical-records')).toHaveCount(0);
 
-    expect(result.status).toBe(403);
-    await expect(screen.formError).toHaveText('You do not have permission to perform this action');
+    expect((await api.receptionist.get(endpoints.medicalRecords)).status()).toBe(403);
+    const denied = await api.receptionist.post(endpoints.medicalRecords, buildMedicalRecord(patient.id));
+    expect(denied.status()).toBe(403);
+    expect((await denied.json()).message).toBe('You do not have permission to perform this action');
   });
 });

@@ -29,10 +29,22 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
 export const MODULE_KEYS = Object.keys(MODULES) as ModuleKey[];
 
 /**
- * Roles allowed to create/update in each module. Mirrors `authorize(...)` in backend/src/routes/index.ts
- * (the "Nurse" role exists in the API but has no E2E account, so it is not listed here).
- * Reads (GET) are open to every authenticated user.
+ * Roles allowed to list/view each module (GET). Mirrors MODULE_ACCESS in backend/src/config/permissions.ts
+ * (the "Nurse" role exists in the API but has no E2E account, so it is not listed here). A role that cannot
+ * read a module gets 403 from the API and does not see it in the sidebar.
  */
+export const READ_ACCESS: Record<ModuleKey, RoleKey[]> = {
+  patients: ['admin', 'doctor', 'receptionist', 'laboratory', 'accountant'],
+  doctors: ['admin', 'doctor', 'receptionist'],
+  appointments: ['admin', 'doctor', 'receptionist'],
+  medicalRecords: ['admin', 'doctor'],
+  laboratory: ['admin', 'doctor', 'laboratory'],
+  pharmacy: ['admin', 'pharmacist'],
+  billing: ['admin', 'accountant', 'receptionist'],
+  staff: ['admin']
+};
+
+/** Roles allowed to create/update in each module. Mirrors MODULE_ACCESS in backend/src/config/permissions.ts. */
 export const WRITE_ACCESS: Record<ModuleKey, RoleKey[]> = {
   patients: ['admin', 'doctor', 'receptionist'],
   doctors: ['admin', 'receptionist'],

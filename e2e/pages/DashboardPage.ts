@@ -3,14 +3,22 @@ import { BasePage } from './BasePage';
 import { parseCurrency } from '../utils/money';
 import type { DashboardStats } from '../api/types';
 
-const isDashboardRequest = (r: Response): boolean => r.url().endsWith('/api/reports/dashboard') && r.request().method() === 'GET';
+// Admins load the hospital-wide report; every other role loads its own overview (with a ?from=&to= day window).
+const isDashboardRequest = (r: Response): boolean =>
+  r.request().method() === 'GET' && ['/api/reports/dashboard', '/api/reports/overview'].includes(new URL(r.url()).pathname);
 
 export class DashboardPage extends BasePage {
   readonly title: Locator;
+  /** Container of the role-specific dashboard (non-admin roles). */
+  readonly roleDashboard: Locator;
+  /** Rows of the role dashboard's work list (today's appointments, test queue, reorder list, ...). */
+  readonly overviewItems: Locator;
 
   constructor(page: Page) {
     super(page);
     this.title = page.getByTestId('dashboard-title');
+    this.roleDashboard = page.getByTestId('role-dashboard');
+    this.overviewItems = page.getByTestId('overview-item');
   }
 
   /** Opens "/" and waits for the stats request, returning its response. */
@@ -22,7 +30,13 @@ export class DashboardPage extends BasePage {
 
   async waitForStats(): Promise<void> {
     await expect(this.title).toBeVisible();
-    await expect(this.page.getByTestId('stat-patients')).toBeVisible(); // skeleton cards are replaced
+    // Skeleton cards are replaced by real ones (any stat card: the set differs per role).
+    await expect(this.page.locator('[data-testid^="stat-"][data-testid$="-value"]').first()).toBeVisible();
+  }
+
+  /** A role-dashboard card, by the key the overview API returns (e.g. "low-stock"). */
+  card(key: string): Locator {
+    return this.page.getByTestId(`stat-${key}`);
   }
 
   /** Reads all six dashboard figures as numbers. */
