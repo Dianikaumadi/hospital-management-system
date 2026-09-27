@@ -90,7 +90,17 @@ export const Staff = sequelize.define('Staff', {
   department: { type: DataTypes.STRING(120), allowNull: false }, hireDate: { type: DataTypes.DATEONLY, allowNull: false }, attendance: { type: DataTypes.JSONB, defaultValue: [] }, leaveRecords: { type: DataTypes.JSONB, defaultValue: [] }
 }, { tableName: 'staff', underscored: true, timestamps: true });
 
+// Uploaded patient files are kept in PostgreSQL because hosts like Render have an ephemeral filesystem.
+// No foreign key, so deleting a patient (e.g. e2e cleanup) is never blocked by its documents.
+export const PatientDocument = sequelize.define('PatientDocument', {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, patientId: { type: DataTypes.INTEGER, allowNull: false },
+  fileName: { type: DataTypes.STRING(300), unique: true, allowNull: false }, originalName: { type: DataTypes.STRING(255), allowNull: false },
+  size: { type: DataTypes.INTEGER, allowNull: false }, content: { type: DataTypes.BLOB, allowNull: false }
+}, { tableName: 'patient_documents', underscored: true, timestamps: true });
+
 Doctor.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Appointment.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' }); Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
 MedicalRecord.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' }); LabTest.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
+// Read-only link for showing the doctor's name; constraints: false keeps the medical_records table schema unchanged.
+MedicalRecord.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor', constraints: false });
 Invoice.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' }); Staff.belongsTo(User, { foreignKey: 'userId', as: 'user' });

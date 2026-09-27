@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { Model, ModelStatic, Op, WhereOptions } from 'sequelize';
+import { Includeable, Model, ModelStatic, Op, WhereOptions } from 'sequelize';
 import { AppError } from '../middleware/error';
 
-export const resourceController = (model: ModelStatic<Model<any, any>>, searchable: string[] = []) => ({
+// `include` adds related rows (e.g. patient/doctor names) to list responses only; other endpoints are unchanged.
+export const resourceController = (model: ModelStatic<Model<any, any>>, searchable: string[] = [], include: Includeable[] = []) => ({
   list: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const where: WhereOptions = {};
@@ -11,7 +12,7 @@ export const resourceController = (model: ModelStatic<Model<any, any>>, searchab
         const search = String(req.query.search).replace(/[\\%_]/g, '\\$&');
         Object.assign(where, { [Op.or]: searchable.map((column) => ({ [column]: { [Op.iLike]: `%${search}%` } })) });
       }
-      const result = await model.findAndCountAll({ where, limit: Math.min(Number(req.query.limit) || 50, 100), order: [['createdAt', 'DESC']] });
+      const result = await model.findAndCountAll({ where, include, limit: Math.min(Number(req.query.limit) || 50, 100), order: [['createdAt', 'DESC']] });
       res.json({ success: true, data: result.rows, meta: { total: result.count } });
     } catch (error) { next(error); }
   },

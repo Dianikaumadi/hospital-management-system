@@ -3,15 +3,16 @@ import { body } from 'express-validator';
 import { activateInvitation, createInvitation, inspectInvitation, listUsers, login, me, register, updateUserStatus } from '../controllers/auth';
 import { resourceController } from '../controllers/resource';
 import { dashboard } from '../controllers/reports';
-import { Appointment, Doctor, Invoice, LabTest, MedicalRecord, Medicine, Patient, Staff } from '../models';
+import { Includeable } from 'sequelize';
+import { Appointment, Doctor, Invoice, LabTest, MedicalRecord, Medicine, Patient, PatientDocument, Staff, User } from '../models';
 import { authenticate, authorize } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { uploadDocument } from '../middleware/upload';
+import { storedFileName, uploadDocument } from '../middleware/upload';
 import { AppError } from '../middleware/error';
 
 const router = Router();
-const crud = (path: string, model: any, roles = ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Laboratory Staff', 'Pharmacist', 'Accountant'], searchable: string[] = []) => {
-  const controller = resourceController(model, searchable);
+const crud = (path: string, model: any, roles = ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Laboratory Staff', 'Pharmacist', 'Accountant'], searchable: string[] = [], include: Includeable[] = []) => {
+  const controller = resourceController(model, searchable, include);
   router.route(path).get(authenticate, controller.list).post(authenticate, authorize(...roles as any), controller.create);
   router.route(`${path}/:id`).get(authenticate, controller.get).patch(authenticate, authorize(...roles as any), controller.update);
 };
@@ -37,7 +38,9 @@ router.post('/patients/:id/documents', authenticate, authorize('Admin', 'Doctor'
     if (!req.file) throw new AppError(422, 'A document file is required');
     const patient: any = await Patient.findByPk(String(req.params.id));
     if (!patient) throw new AppError(404, 'Patient not found');
-    const documents = [...(patient.documents || []), { name: req.file.originalname, url: `/uploads/${req.file.filename}`, uploadedAt: new Date().toISOString() }];
+    const fileName = storedFileName(req.file.originalname);
+    await PatientDocument.create({ patientId: patient.id, fileName, originalName: req.file.originalname, size: req.file.size, content: req.file.buffer });
+    const documents = [...(patient.documents || []), { name: req.file.originalname, url: `/uploads/${fileName}`, uploadedAt: new Date().toISOString() }];
     await patient.update({ documents });
     res.status(201).json({ success: true, data: documents[documents.length - 1] });
   } catch (error) { next(error); }
@@ -45,11 +48,14 @@ router.post('/patients/:id/documents', authenticate, authorize('Admin', 'Doctor'
 
 crud('/patients', Patient, ['Admin', 'Doctor', 'Nurse', 'Receptionist'], ['medicalRecordNumber']);
 crud('/doctors', Doctor, ['Admin', 'Receptionist'], ['department']);
-crud('/appointments', Appointment, ['Admin', 'Doctor', 'Receptionist', 'Nurse']);
-crud('/medical-records', MedicalRecord, ['Admin', 'Doctor', 'Nurse']);
-crud('/laboratory/tests', LabTest, ['Admin', 'Doctor', 'Nurse', 'Laboratory Staff']);
+// Names shown next to the IDs in list screens; only name fields are exposed.
+const withPatient: Includeable = { model: Patient, as: 'patient', attributes: ['id', 'firstName', 'lastName'] };
+const withDoctor: Includeable = { model: Doctor, as: 'doctor', attributes: ['id'], include: [{ model: User, as: 'user', attributes: ['firstName', 'lastName'] }] };
+crud('/appointments', Appointment, ['Admin', 'Doctor', 'Receptionist', 'Nurse'], [], [withPatient, withDoctor]);
+crud('/medical-records', MedicalRecord, ['Admin', 'Doctor', 'Nurse'], [], [withPatient, withDoctor]);
+crud('/laboratory/tests', LabTest, ['Admin', 'Doctor', 'Nurse', 'Laboratory Staff'], [], [withPatient]);
 crud('/pharmacy/medicines', Medicine, ['Admin', 'Pharmacist'], ['name', 'sku']);
-crud('/billing/invoices', Invoice, ['Admin', 'Accountant', 'Receptionist']);
+crud('/billing/invoices', Invoice, ['Admin', 'Accountant', 'Receptionist'], [], [withPatient]);
 crud('/staff', Staff, ['Admin']);
 router.get('/reports/dashboard', authenticate, authorize('Admin', 'Accountant', 'Doctor'), dashboard);
 
