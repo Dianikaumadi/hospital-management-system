@@ -1,20 +1,21 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import { activateInvitation, createInvitation, inspectInvitation, listUsers, login, me, register, updateUserStatus } from '../controllers/auth';
 import { resourceController } from '../controllers/resource';
-import { dashboard } from '../controllers/reports';
+import { dashboard, overview } from '../controllers/reports';
 import { Includeable } from 'sequelize';
 import { Appointment, Doctor, Invoice, LabTest, MedicalRecord, Medicine, Patient, PatientDocument, Staff, User } from '../models';
 import { authenticate, authorize } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { storedFileName, uploadDocument } from '../middleware/upload';
 import { AppError } from '../middleware/error';
+import { MODULE_ACCESS, ModuleAccess } from '../config/permissions';
 
 const router = Router();
-const crud = (path: string, model: any, roles = ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Laboratory Staff', 'Pharmacist', 'Accountant'], searchable: string[] = [], include: Includeable[] = []) => {
+const crud = (path: string, model: any, access: ModuleAccess, searchable: string[] = [], include: Includeable[] = []) => {
   const controller = resourceController(model, searchable, include);
-  router.route(path).get(authenticate, controller.list).post(authenticate, authorize(...roles as any), controller.create);
-  router.route(`${path}/:id`).get(authenticate, controller.get).patch(authenticate, authorize(...roles as any), controller.update);
+  router.route(path).get(authenticate, authorize(...access.read), controller.list).post(authenticate, authorize(...access.write), controller.create);
+  router.route(`${path}/:id`).get(authenticate, authorize(...access.read), controller.get).patch(authenticate, authorize(...access.write), controller.update);
 };
 
 router.post('/auth/register', authenticate, authorize('Admin'), [
@@ -46,17 +47,19 @@ router.post('/patients/:id/documents', authenticate, authorize('Admin', 'Doctor'
   } catch (error) { next(error); }
 });
 
-crud('/patients', Patient, ['Admin', 'Doctor', 'Nurse', 'Receptionist'], ['medicalRecordNumber']);
-crud('/doctors', Doctor, ['Admin', 'Receptionist'], ['department']);
+crud('/patients', Patient, MODULE_ACCESS.patients, ['medicalRecordNumber']);
+crud('/doctors', Doctor, MODULE_ACCESS.doctors, ['department']);
 // Names shown next to the IDs in list screens; only name fields are exposed.
 const withPatient: Includeable = { model: Patient, as: 'patient', attributes: ['id', 'firstName', 'lastName'] };
 const withDoctor: Includeable = { model: Doctor, as: 'doctor', attributes: ['id'], include: [{ model: User, as: 'user', attributes: ['firstName', 'lastName'] }] };
-crud('/appointments', Appointment, ['Admin', 'Doctor', 'Receptionist', 'Nurse'], [], [withPatient, withDoctor]);
-crud('/medical-records', MedicalRecord, ['Admin', 'Doctor', 'Nurse'], [], [withPatient, withDoctor]);
-crud('/laboratory/tests', LabTest, ['Admin', 'Doctor', 'Nurse', 'Laboratory Staff'], [], [withPatient]);
-crud('/pharmacy/medicines', Medicine, ['Admin', 'Pharmacist'], ['name', 'sku']);
-crud('/billing/invoices', Invoice, ['Admin', 'Accountant', 'Receptionist'], [], [withPatient]);
-crud('/staff', Staff, ['Admin']);
+crud('/appointments', Appointment, MODULE_ACCESS.appointments, [], [withPatient, withDoctor]);
+crud('/medical-records', MedicalRecord, MODULE_ACCESS.medicalRecords, [], [withPatient, withDoctor]);
+crud('/laboratory/tests', LabTest, MODULE_ACCESS.laboratory, [], [withPatient]);
+crud('/pharmacy/medicines', Medicine, MODULE_ACCESS.pharmacy, ['name', 'sku']);
+crud('/billing/invoices', Invoice, MODULE_ACCESS.billing, [], [withPatient]);
+crud('/staff', Staff, MODULE_ACCESS.staff);
 router.get('/reports/dashboard', authenticate, authorize('Admin', 'Accountant', 'Doctor'), dashboard);
+// Role-specific dashboard for every signed-in user; `from`/`to` bound "today" in the browser's time zone.
+router.get('/reports/overview', authenticate, [query('from').optional().isISO8601(), query('to').optional().isISO8601(), validate], overview);
 
 export default router;
