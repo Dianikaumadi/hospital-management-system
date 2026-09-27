@@ -50,9 +50,11 @@ every department.
   - Billing / invoices
   - Staff
 - **Dashboard** — summary statistics and reports for Admin, Accountant and Doctor roles.
+- **Currency** — all money (consultation fees, medicine prices, invoice totals, revenue) is in
+  Sri Lankan Rupees and displayed as `LKR 1,234.50`.
 - **Search and pagination** on list endpoints.
 - **Hardening** — request validation, rate limiting, strict CORS allow-list, central error handling.
-- **End-to-end test suite** — 268 Playwright tests covering every module and the RBAC matrix, run in CI.
+- **End-to-end test suite** — 269 Playwright tests covering every module and the RBAC matrix, run in CI.
 
 ## Tech stack
 
@@ -189,7 +191,7 @@ SEED_RESET=true npm run seed --workspace backend     # remove previous demo data
 ```
 
 All demo records use the `DEMO-` prefix and `@carepoint.test` emails (for example
-`anita.desai@carepoint.test`), so they are easy to identify. The script refuses to run when
+`nilmini.jayawardena@carepoint.test`), so they are easy to identify. The script refuses to run when
 `NODE_ENV=production` unless `SEED_ALLOW_PRODUCTION=true` is set. Never load demo data into a
 database that holds real patient information.
 

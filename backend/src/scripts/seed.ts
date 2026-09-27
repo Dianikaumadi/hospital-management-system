@@ -35,34 +35,36 @@ const daysFromNow = (days: number, hour = 9, minute = 0): Date => {
 const dateOnly = (date: Date): string => date.toISOString().slice(0, 10);
 const money = (value: number): number => Math.round(value * 100) / 100;
 
-const FIRST_NAMES_MALE = ['Arjun', 'Rahul', 'Vikram', 'Karan', 'Rohan', 'Aditya', 'Sanjay', 'Nikhil', 'Imran', 'Joseph', 'Manoj', 'Suresh', 'Farhan', 'Dev', 'Anil'];
-const FIRST_NAMES_FEMALE = ['Priya', 'Ananya', 'Kavya', 'Meera', 'Sneha', 'Divya', 'Pooja', 'Nisha', 'Fatima', 'Maria', 'Lakshmi', 'Riya', 'Shreya', 'Aisha', 'Neha'];
-const LAST_NAMES = ['Sharma', 'Patel', 'Iyer', 'Reddy', 'Nair', 'Gupta', 'Khan', 'Menon', 'Das', 'Joshi', 'Verma', 'Pillai', 'Rao', 'Singh', 'Fernandes', 'Kulkarni', 'Bose', 'Chopra'];
-const CITIES = ['Mumbai', 'Pune', 'Bengaluru', 'Chennai', 'Hyderabad', 'Kochi', 'Delhi', 'Kolkata'];
-const STREETS = ['MG Road', 'Park Street', 'Station Road', 'Lake View Lane', 'Temple Street', 'Hill Road', 'Church Road', 'Market Lane'];
+// Sri Lankan demo data: Sinhala, Tamil, Muslim and Burgher names, local towns and +94 phone numbers.
+const FIRST_NAMES_MALE = ['Kasun', 'Nuwan', 'Chaminda', 'Tharindu', 'Dinesh', 'Ruwan', 'Sampath', 'Lahiru', 'Rizwan', 'Kumaran', 'Pradeep', 'Janaka', 'Dilshan', 'Arun', 'Sahan'];
+const FIRST_NAMES_FEMALE = ['Nadeesha', 'Dilini', 'Sanduni', 'Chathurika', 'Ishara', 'Tharushi', 'Kavindi', 'Fathima', 'Shalini', 'Nirosha', 'Hiruni', 'Malsha', 'Rukshana', 'Gayani', 'Thilini'];
+const LAST_NAMES = ['Perera', 'Fernando', 'Silva', 'Jayasinghe', 'Wickramasinghe', 'Bandara', 'Rathnayake', 'Dissanayake', 'Gunawardena', 'Herath', 'Weerasinghe', 'Kumara', 'Mendis', 'Sivakumar', 'Rajendran', 'Nawaz', 'Samarakoon', 'Ekanayake'];
+const CITIES = ['Colombo', 'Kandy', 'Galle', 'Jaffna', 'Negombo', 'Kurunegala', 'Matara', 'Batticaloa'];
+const STREETS = ['Galle Road', 'Kandy Road', 'Temple Road', 'Station Road', 'Lake Road', 'Hill Street', 'Church Road', 'Main Street'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
+// All fees and prices in this seed are Sri Lankan Rupees (LKR).
 const DOCTORS = [
-  { firstName: 'Anita', lastName: 'Desai', specialization: 'Interventional Cardiology', department: 'Cardiology', fee: 1200 },
-  { firstName: 'Rakesh', lastName: 'Menon', specialization: 'Neurology', department: 'Neurology', fee: 1000 },
-  { firstName: 'Sunita', lastName: 'Rao', specialization: 'Pediatrics', department: 'Pediatrics', fee: 700 },
-  { firstName: 'Vivek', lastName: 'Malhotra', specialization: 'Orthopedic Surgery', department: 'Orthopedics', fee: 900 },
-  { firstName: 'Farah', lastName: 'Siddiqui', specialization: 'Obstetrics & Gynecology', department: 'Gynecology', fee: 800 },
-  { firstName: 'Thomas', lastName: 'Mathew', specialization: 'General Medicine', department: 'Internal Medicine', fee: 500 },
-  { firstName: 'Kiran', lastName: 'Bhat', specialization: 'Dermatology', department: 'Dermatology', fee: 600 },
-  { firstName: 'Deepa', lastName: 'Krishnan', specialization: 'ENT', department: 'ENT', fee: 600 }
+  { firstName: 'Nilmini', lastName: 'Jayawardena', specialization: 'Interventional Cardiology', department: 'Cardiology', fee: 4500 },
+  { firstName: 'Ravindra', lastName: 'Senanayake', specialization: 'Neurology', department: 'Neurology', fee: 4000 },
+  { firstName: 'Shanthi', lastName: 'Rajaratnam', specialization: 'Pediatrics', department: 'Pediatrics', fee: 3000 },
+  { firstName: 'Chamara', lastName: 'Wijesekara', specialization: 'Orthopedic Surgery', department: 'Orthopedics', fee: 3500 },
+  { firstName: 'Fathima', lastName: 'Cassim', specialization: 'Obstetrics & Gynecology', department: 'Gynecology', fee: 3500 },
+  { firstName: 'Roshan', lastName: 'Fernando', specialization: 'General Medicine', department: 'Internal Medicine', fee: 2500 },
+  { firstName: 'Dulani', lastName: 'Abeysekara', specialization: 'Dermatology', department: 'Dermatology', fee: 3000 },
+  { firstName: 'Priyanthi', lastName: 'Kanagaratnam', specialization: 'ENT', department: 'ENT', fee: 3000 }
 ];
 
 const STAFF: { firstName: string; lastName: string; role: Role; department: string }[] = [
-  { firstName: 'Lata', lastName: 'Pillai', role: 'Nurse', department: 'Nursing' },
-  { firstName: 'Grace', lastName: 'Thomas', role: 'Nurse', department: 'Nursing' },
-  { firstName: 'Ramesh', lastName: 'Yadav', role: 'Nurse', department: 'Emergency' },
-  { firstName: 'Swati', lastName: 'Kapoor', role: 'Receptionist', department: 'Front Office' },
-  { firstName: 'Ajay', lastName: 'Saxena', role: 'Receptionist', department: 'Front Office' },
-  { firstName: 'Harish', lastName: 'Kumar', role: 'Laboratory Staff', department: 'Laboratory' },
-  { firstName: 'Nandini', lastName: 'Ghosh', role: 'Laboratory Staff', department: 'Laboratory' },
-  { firstName: 'Omar', lastName: 'Sheikh', role: 'Pharmacist', department: 'Pharmacy' },
-  { firstName: 'Rekha', lastName: 'Jain', role: 'Accountant', department: 'Finance' }
+  { firstName: 'Chandrika', lastName: 'Herath', role: 'Nurse', department: 'Nursing' },
+  { firstName: 'Grace', lastName: 'Ondaatjie', role: 'Nurse', department: 'Nursing' },
+  { firstName: 'Saman', lastName: 'Kumara', role: 'Nurse', department: 'Emergency' },
+  { firstName: 'Nadeeka', lastName: 'Perera', role: 'Receptionist', department: 'Front Office' },
+  { firstName: 'Asanka', lastName: 'Silva', role: 'Receptionist', department: 'Front Office' },
+  { firstName: 'Thushara', lastName: 'Bandara', role: 'Laboratory Staff', department: 'Laboratory' },
+  { firstName: 'Vasuki', lastName: 'Sivakumar', role: 'Laboratory Staff', department: 'Laboratory' },
+  { firstName: 'Imtiaz', lastName: 'Marikar', role: 'Pharmacist', department: 'Pharmacy' },
+  { firstName: 'Sewwandi', lastName: 'Gunasekara', role: 'Accountant', department: 'Finance' }
 ];
 
 const REASONS = ['Chest pain on exertion', 'Recurring headaches', 'Child fever and cough', 'Knee pain after fall', 'Routine antenatal check-up', 'Follow-up for hypertension', 'Skin rash', 'Ear pain and reduced hearing', 'Annual health check-up', 'Lower back pain', 'Follow-up for diabetes', 'Seasonal allergies'];
@@ -80,28 +82,28 @@ const DIAGNOSES = [
 ];
 
 const LAB_TESTS: { name: string; price: number; result: string }[] = [
-  { name: 'Complete Blood Count', price: 350, result: 'Hb 13.4 g/dL, WBC 7,200/µL, Platelets 2.6 lakh/µL — within normal limits' },
-  { name: 'Lipid Profile', price: 600, result: 'Total cholesterol 212 mg/dL (borderline high), LDL 138 mg/dL, HDL 44 mg/dL' },
-  { name: 'HbA1c', price: 450, result: 'HbA1c 7.1% — above target range' },
-  { name: 'Fasting Blood Sugar', price: 120, result: '104 mg/dL — impaired fasting glucose' },
-  { name: 'Thyroid Profile (T3, T4, TSH)', price: 550, result: 'TSH 2.8 mIU/L — euthyroid' },
-  { name: 'Liver Function Test', price: 700, result: 'ALT 32 U/L, AST 28 U/L — within normal limits' },
-  { name: 'Kidney Function Test', price: 650, result: 'Creatinine 0.9 mg/dL, Urea 26 mg/dL — within normal limits' },
-  { name: 'Urine Routine', price: 150, result: 'No abnormality detected' },
-  { name: 'Chest X-Ray', price: 500, result: 'Lung fields clear, no active lesion' },
-  { name: 'ECG', price: 300, result: 'Normal sinus rhythm, rate 76 bpm' }
+  { name: 'Complete Blood Count', price: 900, result: 'Hb 13.4 g/dL, WBC 7,200/µL, Platelets 260,000/µL — within normal limits' },
+  { name: 'Lipid Profile', price: 2200, result: 'Total cholesterol 212 mg/dL (borderline high), LDL 138 mg/dL, HDL 44 mg/dL' },
+  { name: 'HbA1c', price: 1800, result: 'HbA1c 7.1% — above target range' },
+  { name: 'Fasting Blood Sugar', price: 350, result: '104 mg/dL — impaired fasting glucose' },
+  { name: 'Thyroid Profile (T3, T4, TSH)', price: 4500, result: 'TSH 2.8 mIU/L — euthyroid' },
+  { name: 'Liver Function Test', price: 2800, result: 'ALT 32 U/L, AST 28 U/L — within normal limits' },
+  { name: 'Kidney Function Test', price: 2500, result: 'Creatinine 0.9 mg/dL, Urea 26 mg/dL — within normal limits' },
+  { name: 'Urine Routine', price: 400, result: 'No abnormality detected' },
+  { name: 'Chest X-Ray', price: 2000, result: 'Lung fields clear, no active lesion' },
+  { name: 'ECG', price: 1000, result: 'Normal sinus rhythm, rate 76 bpm' }
 ];
 
 const MEDICINES: { name: string; price: number }[] = [
-  { name: 'Paracetamol 650mg', price: 2.5 }, { name: 'Amoxicillin 500mg', price: 8 }, { name: 'Azithromycin 500mg', price: 22 },
-  { name: 'Ibuprofen 400mg', price: 3 }, { name: 'Naproxen 250mg', price: 5 }, { name: 'Cetirizine 10mg', price: 1.8 },
-  { name: 'Metformin 500mg', price: 2.2 }, { name: 'Amlodipine 5mg', price: 3.5 }, { name: 'Atorvastatin 10mg', price: 6 },
-  { name: 'Omeprazole 20mg', price: 4 }, { name: 'Pantoprazole 40mg', price: 5.5 }, { name: 'Losartan 50mg', price: 6.5 },
-  { name: 'Salbutamol Inhaler 100mcg', price: 145 }, { name: 'Insulin Glargine 100IU/mL', price: 780 }, { name: 'ORS Sachet', price: 20 },
-  { name: 'Hydrocortisone cream 1%', price: 65 }, { name: 'Clopidogrel 75mg', price: 7 }, { name: 'Levothyroxine 50mcg', price: 1.6 },
-  { name: 'Ondansetron 4mg', price: 4.5 }, { name: 'Vitamin D3 60000IU', price: 30 }, { name: 'Ferrous Sulfate 200mg', price: 1.2 },
-  { name: 'Ceftriaxone Injection 1g', price: 55 }, { name: 'Normal Saline 500mL', price: 32 }, { name: 'Dolo Syrup 125mg/5mL', price: 38 },
-  { name: 'Montelukast 10mg', price: 9 }
+  { name: 'Paracetamol 650mg', price: 5 }, { name: 'Amoxicillin 500mg', price: 25 }, { name: 'Azithromycin 500mg', price: 90 },
+  { name: 'Ibuprofen 400mg', price: 8 }, { name: 'Naproxen 250mg', price: 15 }, { name: 'Cetirizine 10mg', price: 6 },
+  { name: 'Metformin 500mg', price: 7 }, { name: 'Amlodipine 5mg', price: 10 }, { name: 'Atorvastatin 10mg', price: 20 },
+  { name: 'Omeprazole 20mg', price: 12 }, { name: 'Pantoprazole 40mg', price: 18 }, { name: 'Losartan 50mg', price: 18 },
+  { name: 'Salbutamol Inhaler 100mcg', price: 950 }, { name: 'Insulin Glargine 100IU/mL', price: 4800 }, { name: 'ORS Sachet', price: 60 },
+  { name: 'Hydrocortisone cream 1%', price: 450 }, { name: 'Clopidogrel 75mg', price: 25 }, { name: 'Levothyroxine 50mcg', price: 6 },
+  { name: 'Ondansetron 4mg', price: 15 }, { name: 'Vitamin D3 60000IU', price: 120 }, { name: 'Ferrous Sulfate 200mg', price: 4 },
+  { name: 'Ceftriaxone Injection 1g', price: 450 }, { name: 'Normal Saline 500mL', price: 250 }, { name: 'Paracetamol Syrup 120mg/5mL', price: 280 },
+  { name: 'Montelukast 10mg', price: 30 }
 ];
 
 const WEEKDAY_SCHEDULE = (start: string, end: string) => ({
@@ -158,7 +160,7 @@ const run = async (): Promise<void> => {
 
     const doctors = await Doctor.bulkCreate(DOCTORS.map((d, i) => ({
       userId: doctorUsers[i].id, specialization: d.specialization, department: d.department,
-      licenseNumber: `${PREFIX}MCI-${pad(10231 + i * 37, 6)}`, consultationFee: d.fee,
+      licenseNumber: `${PREFIX}SLMC-${pad(10231 + i * 37, 6)}`, consultationFee: d.fee,
       schedule: i % 2 === 0 ? WEEKDAY_SCHEDULE('09:00', '14:00') : WEEKDAY_SCHEDULE('13:00', '18:00')
     })), { transaction, returning: true });
 
@@ -177,10 +179,10 @@ const run = async (): Promise<void> => {
       return {
         medicalRecordNumber: `${PREFIX}MRN-${pad(i + 1, 5)}`, firstName, lastName,
         dateOfBirth: dateOnly(daysFromNow(-int(365, 365 * 85))), gender,
-        phone: `+91 90000 ${pad(10000 + i * 173, 5)}`,
+        phone: `+94 77 0${pad(10 + i, 2)} ${pad(1000 + i * 173, 4)}`,
         email: random() < 0.7 ? `${firstName}.${lastName}${i + 1}@${EMAIL_DOMAIN}`.toLowerCase() : null,
         address: `${int(1, 250)}, ${pick(STREETS)}, ${pick(CITIES)}`, bloodGroup: pick(BLOOD_GROUPS),
-        emergencyContact: `${pick([...FIRST_NAMES_MALE, ...FIRST_NAMES_FEMALE])} ${lastName} (+91 90000 ${pad(60000 + i * 97, 5)})`,
+        emergencyContact: `${pick([...FIRST_NAMES_MALE, ...FIRST_NAMES_FEMALE])} ${lastName} (+94 71 1${pad(10 + i, 2)} ${pad(2000 + i * 97, 4)})`,
         documents: []
       };
     }), { transaction, returning: true });
@@ -238,7 +240,7 @@ const run = async (): Promise<void> => {
     // Pharmacy stock, including some low-stock and soon-to-expire items.
     await Medicine.bulkCreate(MEDICINES.map((m, i) => ({
       name: m.name, sku: `${PREFIX}MED-${pad(i + 1, 3)}`, unitPrice: m.price,
-      quantity: i % 6 === 0 ? int(0, 8) : int(40, 600), reorderLevel: m.price > 100 ? 5 : 25,
+      quantity: i % 6 === 0 ? int(0, 8) : int(40, 600), reorderLevel: m.price > 500 ? 5 : 25,
       expiryDate: dateOnly(daysFromNow(i % 8 === 0 ? int(10, 45) : int(120, 900)))
     })), { transaction });
 

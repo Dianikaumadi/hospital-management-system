@@ -44,9 +44,14 @@ test.describe('Dashboard reports @counts', () => {
     await expect(dashboardPage.summaryValue('lab-tests')).toHaveText(await dashboardPage.statValue('lab-tests').innerText());
   });
 
-  test('revenue is formatted as currency', async ({ dashboardPage }) => {
+  test('revenue is formatted as Sri Lankan Rupees', async ({ dashboardPage }) => {
     await dashboardPage.open();
-    await expect(dashboardPage.statValue('revenue')).toHaveText(/^₹[\d,]+(\.\d+)?$/);
+    await expect(dashboardPage.statValue('revenue')).toHaveText(/^LKR [\d,]+\.\d{2}$/);
+  });
+
+  test('the reports API declares LKR as the currency', async ({ api }) => {
+    const stats = await api.admin.getData<DashboardStats & { currency: string }>(endpoints.dashboard);
+    expect(stats.currency).toBe('LKR');
   });
 
   test('total patients count increases when a patient is registered', async ({ dashboardPage, api, data }) => {
@@ -80,7 +85,7 @@ test.describe('Dashboard reports @counts', () => {
     const shown = await dashboardPage.readStats();
 
     expect(shown.revenue).toBeGreaterThanOrEqual(Math.round((before.revenue + amount) * 100) / 100 - 0.005);
-    expect(await dashboardPage.statValue('revenue').innerText()).toMatch(/^₹/);
+    expect(await dashboardPage.statValue('revenue').innerText()).toMatch(/^LKR /);
   });
 
   test('revenue does not change when only the payment status changes', async ({ api, data }) => {

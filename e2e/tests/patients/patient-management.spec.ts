@@ -173,7 +173,7 @@ test.describe('Patient management - API @api', () => {
 
   test('updates a patient and returns the new values', async ({ api, data, patientsPage }) => {
     const patient = await data.patient();
-    const changes = { lastName: 'Updated', phone: '+91 91111 22222', address: '9 New Street', bloodGroup: 'B+' };
+    const changes = { lastName: 'Updated', phone: '+94 76 111 2222', address: '9 New Street', bloodGroup: 'B+' };
 
     const response = await api.receptionist.patch(`${endpoints.patients}/${patient.id}`, changes);
 

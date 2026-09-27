@@ -16,11 +16,11 @@ export const buildPatient = (overrides: Partial<PatientInput> = {}): PatientInpu
     lastName: 'Patient',
     dateOfBirth: '1990-05-15',
     gender: 'Female',
-    phone: '+91 98765 43210',
+    phone: '+94 77 123 4567',
     email: `patient.${id}@hms-e2e.test`,
     address: '12 Test Street, Testville',
     bloodGroup: 'O+',
-    emergencyContact: 'Sam Contact +91 90000 00000',
+    emergencyContact: 'Sam Contact +94 71 000 0000',
     ...overrides
   };
 };

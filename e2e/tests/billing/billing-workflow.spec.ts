@@ -2,7 +2,7 @@ import { test, expect, storageStatePath } from '../../fixtures';
 import { endpoints } from '../../api/endpoints';
 import type { Invoice, InvoiceStatus } from '../../api/types';
 import { buildInvoice, DEFAULT_LINES } from '../../fixtures/invoices';
-import { calcInvoiceTotal } from '../../utils/money';
+import { calcInvoiceTotal, formatLKR } from '../../utils/money';
 import { uid } from '../../utils/random';
 
 test.use({ storageState: storageStatePath('accountant') });
@@ -29,7 +29,7 @@ test.describe('Billing - invoices (UI)', () => {
 
     await expect(billingPage.form).toBeHidden();
     await expect(billingPage.notice).toHaveText('Invoice saved successfully');
-    await billingPage.expectRow(id, { invoiceNumber, patientId: patient.id, total: '1450.75', status: 'Pending' });
+    await billingPage.expectRow(id, { invoiceNumber, patientId: patient.id, total: 'LKR 1,450.75', status: 'Pending' });
 
     expect(await api.accountant.getData<Invoice>(`${endpoints.invoices}/${id}`)).toMatchObject({ invoiceNumber, total: '1450.75' });
   });
@@ -134,7 +134,7 @@ test.describe('Billing - payment status', () => {
     const partial = await api.accountant.patchData<Invoice>(url, { status: 'Partially Paid' });
     expect(partial).toMatchObject({ status: 'Partially Paid', paidAt: null });
     await billingPage.refresh();
-    await billingPage.expectRow(invoice.id, { status: 'Partially Paid', total: invoice.total });
+    await billingPage.expectRow(invoice.id, { status: 'Partially Paid', total: formatLKR(invoice.total) });
 
     // Settled
     const paidAt = new Date().toISOString();
